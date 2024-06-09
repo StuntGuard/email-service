@@ -15,7 +15,7 @@ pipeline {
 
     stage('Push') {
       steps {
-        sh 'docker push asia-southeast2-docker.pkg.dev/capstone-project-424205/email-service/myapp '
+        sh 'docker push asia-southeast2-docker.pkg.dev/capstone-project-424205/email-service/my-app '
       }
     }
 
