@@ -9,7 +9,7 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'docker build -t asia-southeast2-docker.pkg.dev/capstone-project-424205/email-service .'
+        sh 'docker build -t asia-southeast2-docker.pkg.dev/capstone-project-424205/email-service -f email-service/Dockerfile . '
       }
     }
 
