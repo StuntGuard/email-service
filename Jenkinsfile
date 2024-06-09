@@ -19,5 +19,11 @@ pipeline {
       }
     }
 
+    stage('end') {
+      steps {
+        echo 'hello world'
+      }
+    }
+
   }
 }
