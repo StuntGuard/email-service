@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import db from "../database/db.js";
 import jwt from "jsonwebtoken";
-import { html } from "./templateMail.js";
+import { html, verifyEmailHTML } from "./templateMail.js";
 import bcrypt from "bcrypt";
 import validator from "validator";
 dotenv.config();
@@ -129,6 +129,65 @@ app.post("/reset-password/update", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/checkEmail", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Email is not valid" });
+    }
+
+    const [results] = await db.query("SELECT * FROM User WHERE email = ?", [
+      email,
+    ]);
+
+    if (results.length !== 0) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    const token = jwt.sign({ email }, process.env.SECRET_TOKEN, {
+      expiresIn: "15m",
+    });
+
+    await transporter.sendMail({
+      from: '"Stuntguard 👻" <stuntguard@gmail.com>',
+      to: email,
+      subject: "Verify Email",
+      html: verifyEmailHTML(token),
+    });
+
+    res.status(200).json({ status: "success", message: "Email sent" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/checkEmail/verify", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: "Token is required" });
+    }
+
+    jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(400).json({ message: "Token expired" });
+        }
+        return res.status(400).json({ message: "Invalid token" });
+      }
+
+      res.status(200).json({ status: "success", message: "Token verified" });
+    });
+  } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
 });
