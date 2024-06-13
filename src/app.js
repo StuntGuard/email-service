@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import db from "../database/db.js";
 import jwt from "jsonwebtoken";
 import { html } from "./templateMail.js";
+import bcrypt from "bcrypt";
 import validator from "validator";
 dotenv.config();
 
@@ -44,7 +45,7 @@ app.post("/reset-password", async (req, res) => {
     }
 
     const token = jwt.sign({ email }, process.env.SECRET_TOKEN, {
-      expiresIn: "10m",
+      expiresIn: "15m",
     });
 
     await transporter.sendMail({
@@ -54,7 +55,7 @@ app.post("/reset-password", async (req, res) => {
       html: html(token),
     });
 
-    res.status(200).json({ stauts: "success", message: "Email sent" });
+    res.status(200).json({ status: "success", message: "Email sent" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
@@ -113,8 +114,14 @@ app.post("/reset-password/update", async (req, res) => {
         return res.status(404).json({ message: "Email not found" });
       }
 
+      const genSalt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, genSalt);
+
+      if (!hashedPassword)
+        return res.status(500).json({ message: "Internal server error" });
+
       await db.query("UPDATE User SET password = ? WHERE email = ?", [
-        password,
+        hashedPassword,
         decoded.email,
       ]);
 
