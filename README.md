@@ -15,7 +15,7 @@ Endpoints
 * **POST /reset-password/verify**: Endpoint for verifying the reset token and initiating the password update.
 * **POST /reset-password/update**: Endpoint for updating the user's password after verification.
 * **POST /checkEmail**: Endpoint for sending token to check if an email valid or not.
-* **POST /checkEmail/verify**: Endpoint for verifying the email address with token have been send before
+* **POST /checkEmail/verify**: Endpoint for verifying the email address with token have been send before.
 
 Usage
 -----
